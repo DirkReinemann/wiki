@@ -106,6 +106,29 @@ int main() {
 }
 ```
 
+### copy file
+
+```c
+int copy_file(const char *src, const char *dst)
+{
+    int c;
+    FILE *fsrc, *fdst;
+
+    fsrc = fopen(src, "rb");
+    if (fsrc == NULL)
+        return 1;
+
+    fdst = fopen(dst, "wb");
+    if (fdst == NULL)
+        return 1;
+
+    while ((c = fgetc(fsrc)) != EOF)
+        fputc(c, fdst);
+
+    return 0;
+}
+```
+
 ## docker
 
 ```bash
