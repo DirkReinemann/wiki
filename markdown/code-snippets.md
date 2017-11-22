@@ -121,3 +121,13 @@ docker stop $(docker ps -a -q)
 # remove all containers
 docker rm $(docker ps -a -q)
 ```
+
+## git
+
+### add repository to github
+
+```bash
+git remote add URL
+git pull --alow-unrelated-histories
+git push --set-upstream origin master
+```
