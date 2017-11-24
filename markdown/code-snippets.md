@@ -154,3 +154,9 @@ git remote add URL
 git pull --alow-unrelated-histories
 git push --set-upstream origin master
 ```
+
+### delete remote branch
+
+```bash
+git push origin --delete [BRANCHNAME]
+```
