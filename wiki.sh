@@ -23,7 +23,7 @@ fi
 while getopts "s:" OPT; do
     case $OPT in
         s)
-            search $OPTARG
+            search "$OPTARG"
         ;;
         \?)
             usage
