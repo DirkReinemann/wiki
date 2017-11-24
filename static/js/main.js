@@ -11,20 +11,6 @@ function addErrorMessage(message) {
     content.append(temnplate.replace("{{message}}", message));
 }
 
-function getPanel(title, content) {
-    let template = `
-        <div class='panel panel-primary'>
-            <div class='panel-heading'>
-                <h3 class='panel-title'>{{title}}</h3>
-            </div>
-            <div class='panel-body'>
-            {{content}}
-            </div>
-        </div>
-    `;
-    return template.replace("{{title}}", title).replace("{{content}}", content);
-}
-
 function getFilterButtonRow() {
     let template = `
         <div class="row">
