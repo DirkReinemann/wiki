@@ -23,7 +23,7 @@ function getFilterButtonRow() {
                     </span>
                 </div>
             </div>
-        </div>
+        </div><br/>
     `;
     return template;
 }
@@ -43,6 +43,12 @@ function getFileListRow(filelist) {
     return template.replace("{{items}}", items);
 }
 
+function clearFileFilterInput() {
+    $("#file").contents().each(function() {
+        $(this).show();
+    });
+}
+
 function loadFile(filename) {
     $.ajax({
         url: "file",
@@ -51,7 +57,32 @@ function loadFile(filename) {
         success: function(data) {
             let content = $("#content");
             content.empty();
-            content.append(data);
+            content.append("<h1>WIKIPAGE</h1><br/>");
+            content.append(getFilterButtonRow());
+            content.append("<div class='row'><div class='col-md-12' id='file'>" + data + "</div></div>");
+
+            $("#filter").keyup(function() {
+                let value = $(this).val().trim().toLowerCase();
+                if (value.length > 0) {
+                    $("#file").contents().each(function() {
+                        let element = $(this);
+                        if (element.text().toLowerCase().indexOf(value) !== -1) {
+                            element.show();
+                        }
+                        else {
+                            element.hide();
+                        }
+                    });
+                }
+                else {
+                    clearFileFilterInput();
+                }
+            });
+
+            $("#clear-filter").click(function() {
+                $("#filter").val("");
+                clearFileFilterInput();
+            });
         },
         error: function() {
             addErrorMessage("Error while loading the file '" + filename + "'!");
@@ -59,7 +90,7 @@ function loadFile(filename) {
     });
 }
 
-function clearFilterInput() {
+function clearFileListFilterInput() {
     $("#filelist li").each(function() {
         $(this).show();
     });
@@ -70,7 +101,6 @@ function loadFilelist() {
         url: "filelist",
         success: function(data) {
             let result = getFilterButtonRow();
-            result += "<br/>";
             result += getFileListRow(data);
 
             let content = $("#content");
@@ -83,11 +113,11 @@ function loadFilelist() {
             });
 
             $("#filter").keyup(function() {
-                let value = $(this).val().trim();
+                let value = $(this).val().trim().toLowerCase();
                 if (value.length > 0) {
                     $("#filelist li").each(function() {
                         let li = $(this);
-                        if (li.text().toLowerCase().indexOf(value.toLowerCase()) !== -1) {
+                        if (li.text().toLowerCase().indexOf(value) !== -1) {
                             li.show();
                         }
                         else {
@@ -95,13 +125,13 @@ function loadFilelist() {
                         }
                     });
                 } else {
-                    clearFilterInput();
+                    clearFileListFilterInput();
                 }
             });
 
             $("#clear-filter").click(function() {
                 $("#filter").val("");
-                clearFilterInput();
+                clearFileListFilterInput();
             });
         },
         error: function() {
