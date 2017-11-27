@@ -29,6 +29,17 @@ typedef enum {
     TEXT
 } contenttype;
 
+typedef struct {
+    char *filename;
+    char *lines;
+} searchresult;
+
+typedef struct {
+    int           size;
+    searchresult *data;
+    char *        keyword;
+} searchresults;
+
 int render_file(const char *relpath, const size_t srelpath)
 {
     size_t ssrcfile, soutfile, scommand;
@@ -160,6 +171,11 @@ void set_default_header(struct mg_connection *connection, contenttype c)
     free(type);
 }
 
+void set_error_header(struct mg_connection *connection)
+{
+    mg_printf(connection, "HTTP/1.1 400 Bad Request\r\nContent-Type: %s\r\nTransfer-Encoding: chunked\r\n\r\n", CONTENT_TYPE_TEXT);
+}
+
 void *handle_filelist_onfile(const char *path, const char *filename, void *data)
 {
     const char *relpath = path + sworkpath + soutdir + 2;
@@ -214,7 +230,6 @@ void handle_file(struct mg_connection *connection, struct http_message *message)
     char name[512];
 
     mg_get_http_var(&message->body, "filename", name, 512);
-    set_default_header(connection, TEXT);
 
     size_t sfilename = sworkpath + soutdir + strlen(name) + 3;
     char filename[sfilename];
@@ -225,15 +240,165 @@ void handle_file(struct mg_connection *connection, struct http_message *message)
         char *line = NULL;
         ssize_t read = 0;
         size_t len = 0;
-        while ((read = getline(&line, &len, file)) != -1)
+        set_default_header(connection, TEXT);
+        while ((read = getline(&line, &len, file)) != -1) {
             mg_printf_http_chunk(connection, "%s", line);
-        if (line != NULL) {
-            free(line);
-            line = NULL;
+            if (line != NULL) {
+                free(line);
+                line = NULL;
+            }
+        }
+        fclose(file);
+    } else {
+        set_error_header(connection);
+    }
+    mg_send_http_chunk(connection, "", 0);
+}
+
+char *escape_double_quotes(char *value)
+{
+    char *result = (char *)malloc(1 * sizeof(char));
+
+    result[0] = '\0';
+    if (value == NULL)
+        return result;
+
+    size_t svalue = strlen(value);
+    if (svalue == 0)
+        return result;
+
+    char *match = value;
+    size_t pos = 0;
+    size_t oldpos = 0;
+    size_t smatch = 0;
+    size_t rpos = 0;
+    size_t length = 0;
+    while ((match = strchr(match, '"')) != NULL) {
+        oldpos = pos;
+        smatch = strlen(match);
+        pos = svalue - smatch;
+        length = pos - oldpos;
+        result = (char *)realloc(result, (rpos + length + 2) * sizeof(char));
+        if (length > 0)
+            strncpy(result + rpos, value + oldpos, length);
+        strncpy(result + rpos + length, "\\\"", 2);
+        rpos = rpos + length + 2;
+        match++;
+        pos++;
+    }
+    size_t rest = svalue - pos;
+    result = (char *)realloc(result, (rpos + rest + 1) * sizeof(char));
+    strncpy(result + rpos, value + pos, rest);
+    rpos += rest;
+    result[rpos] = '\0';
+    return result;
+}
+
+void *handle_search_onfile(const char *path, const char *filename, void *data)
+{
+    const char *relpath = path + sworkpath + ssrcdir + 1;
+    searchresults *ss = (searchresults *)data;
+    size_t sfilename = strlen(filename);
+    size_t sfilepath = strlen(path) + sfilename + 2;
+    size_t srelpath = strlen(relpath);
+    size_t srelname = srelpath + sfilename + 2;
+    char filepath[sfilepath];
+    char relname[srelname];
+
+    snprintf(filepath, sfilepath, "%s/%s", path, filename);
+    if (srelpath > 0)
+        snprintf(relname, srelname, "%s/%s", relpath + 1, filename);
+    else
+        snprintf(relname, srelname, "%s", filename);
+
+    strncpy(relname + srelname - 4, "html", 4);
+    relname[srelname] = '\0';
+
+    FILE *file = fopen(filepath, "r");
+    if (file != NULL) {
+        char *line = NULL;
+        ssize_t read = 0;
+        size_t len = 0;
+        int alloc = 0;
+        while ((read = getline(&line, &len, file)) != -1) {
+            if (strstr(line, ss->keyword) != NULL) {
+                char *escaped = escape_double_quotes(line);
+                size_t sescaped = strlen(escaped) - 1;
+                if (alloc == 0) {
+                    ss->data = (searchresult *)realloc(ss->data, (ss->size + 1) * sizeof(searchresult));
+                    searchresult *s = ss->data + ss->size;
+                    s->filename = (char *)malloc((srelname + 1) * sizeof(char));
+                    strncpy(s->filename, relname, srelname);
+                    s->filename[srelname] = '\0';
+                    s->lines = (char *)malloc((sescaped + 4) * sizeof(char));
+                    strncpy(s->lines, "[\"", 2);
+                    strncpy(s->lines + 2, escaped, sescaped);
+                    strncpy(s->lines + sescaped + 2, "\"", 1);
+                    s->lines[sescaped + 3] = '\0';
+                    alloc = 1;
+                } else {
+                    searchresult *s = ss->data + ss->size;
+                    size_t slines = strlen(s->lines);
+                    s->lines = (char *)realloc(s->lines, (slines + sescaped + 4) * sizeof(char));
+                    strncpy(s->lines + slines, ",\"", 2);
+                    strncpy(s->lines + slines + 2, escaped, sescaped);
+                    strncpy(s->lines + slines + sescaped + 2, "\"", 1);
+                    s->lines[slines + sescaped + 3] = '\0';
+                }
+                free(escaped);
+            }
+            if (line != NULL) {
+                free(line);
+                line = NULL;
+            }
+        }
+        if (alloc == 1) {
+            searchresult *s = ss->data + ss->size;
+            size_t slines = strlen(s->lines);
+            s->lines = (char *)realloc(s->lines, (slines + 2) * sizeof(char));
+            s->lines[slines] = ']';
+            s->lines[slines + 1] = '\0';
+            ss->size++;
         }
         fclose(file);
     }
+    return ss;
+}
+
+void handle_search(struct mg_connection *connection, struct http_message *message)
+{
+    char keyword[512];
+    size_t spath = sworkpath + ssrcdir + 2;
+    char path[spath];
+
+    snprintf(path, spath, "%s/%s", workpath, SRCDIR);
+
+    mg_get_http_var(&message->body, "keyword", keyword, 512);
+
+    searchresults ss;
+    ss.size = 0;
+    ss.data = (searchresult *)malloc(0 * sizeof(searchresult));
+    size_t skeyword = strlen(keyword);
+    ss.keyword = (char *)malloc((skeyword + 1) * sizeof(char));
+    strncpy(ss.keyword, keyword, skeyword);
+    ss.keyword[skeyword] = '\0';
+
+    traverse_directory(path, NULL, handle_search_onfile, &ss);
+    set_default_header(connection, JSON);
+    for (int i = 0; i < ss.size; i++) {
+        searchresult *s = ss.data + i;
+        if (i == 0)
+            mg_printf_http_chunk(connection, "[{\"filename\":\"%s\",\"lines\":%s}", s->filename, s->lines);
+        else if (i == ss.size - 1)
+            mg_printf_http_chunk(connection, ",{\"filename\":\"%s\",\"lines\":%s}]", s->filename, s->lines);
+        else
+            mg_printf_http_chunk(connection, ",{\"filename\":\"%s\",\"lines\":%s}", s->filename, s->lines);
+        free(s->filename);
+        free(s->lines);
+    }
     mg_send_http_chunk(connection, "", 0);
+    free(ss.data);
+    free(ss.keyword);
 }
 
 void request_handler(struct mg_connection *connection, int event, void *data)
@@ -246,6 +411,8 @@ void request_handler(struct mg_connection *connection, int event, void *data)
             handle_filelist(connection);
         else if (mg_vcmp(&message->uri, "/file") == 0)
             handle_file(connection, message);
+        else if (mg_vcmp(&message->uri, "/search") == 0)
+            handle_search(connection, message);
         else
             mg_serve_http(connection, message, opts);
         break;

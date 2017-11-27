@@ -2,6 +2,7 @@ body { font-family: monospace; }
 a { cursor: pointer; }
 .pagetitle:hover { cursor: pointer; }
 .filelist li:hover { background-color: #337ab7; cursor: pointer; }
+.filename:hover { background-color: #337ab7; cursor: pointer; }
 
 /* codestyle */
 div.sourceLine, a.sourceLine { display: inline-block; min-height: 1.25em; }

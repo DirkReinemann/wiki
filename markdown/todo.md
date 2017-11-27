@@ -58,6 +58,8 @@
 * 01:18:00 - Northern Groove Show
 * 00:55:00 - 01:11:00 - Dj Doboy - The Vocal Edition 26
 * 00:21:00 - Dj Cooper  Gästeliste 030 01.01.2015
+* 00:51:00 - Subfactory Show Boombox Banquet Special
+* 01:09:00 - Subfactory Show Boombox Banquet Special
 * Carl Mattes 20.09.2009
 
 ## Books
