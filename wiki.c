@@ -15,6 +15,7 @@ const char *STATICDIR = "static";
 const char *PANDOC_COMMAND = "pandoc %s -o %s";
 const char *CONTENT_TYPE_JSON = "application/json";
 const char *CONTENT_TYPE_TEXT = "text/plain";
+const char *HIGHLIGHT_FORMAT = "<span class='highlight'>%s</span>";
 
 char workpath[512];
 
@@ -242,7 +243,7 @@ void handle_file(struct mg_connection *connection, struct http_message *message)
     mg_send_http_chunk(connection, "", 0);
 }
 
-char *escape_double_quotes(char *value)
+char *replace_in_string(char *value, char *sequence, char *replacement)
 {
     char *result = (char *)malloc(1 * sizeof(char));
 
@@ -260,18 +261,20 @@ char *escape_double_quotes(char *value)
     size_t smatch = 0;
     size_t rpos = 0;
     size_t length = 0;
-    while ((match = strchr(match, '"')) != NULL) {
+    size_t sreplacement = strlen(replacement);
+    size_t ssequence = strlen(sequence);
+    while ((match = strstr(match, sequence)) != NULL) {
         oldpos = pos;
         smatch = strlen(match);
         pos = svalue - smatch;
         length = pos - oldpos;
-        result = (char *)realloc(result, (rpos + length + 2) * sizeof(char));
+        result = (char *)realloc(result, (rpos + length + sreplacement) * sizeof(char));
         if (length > 0)
             strncpy(result + rpos, value + oldpos, length);
-        strncpy(result + rpos + length, "\\\"", 2);
-        rpos = rpos + length + 2;
+        strncpy(result + rpos + length, replacement, sreplacement);
+        rpos = rpos + length + sreplacement;
         match++;
-        pos++;
+        pos += ssequence;
     }
     size_t rest = svalue - pos;
     result = (char *)realloc(result, (rpos + rest + 1) * sizeof(char));
@@ -309,7 +312,12 @@ void *handle_search_onfile(const char *path, const char *filename, void *data)
         int alloc = 0;
         while ((read = getline(&line, &len, file)) != -1) {
             if (strstr(line, ss->keyword) != NULL) {
-                char *escaped = escape_double_quotes(line);
+                size_t sreplacement = strlen(HIGHLIGHT_FORMAT) + strlen(ss->keyword);
+                char replacement[sreplacement];
+                snprintf(replacement, sreplacement, HIGHLIGHT_FORMAT, ss->keyword);
+
+                char *highlighted = replace_in_string(line, ss->keyword, replacement);
+                char *escaped = replace_in_string(highlighted, (char *)"\"", (char *)"\\\"");
                 size_t sescaped = strlen(escaped) - 1;
                 if (alloc == 0) {
                     ss->data = (searchresult *)realloc(ss->data, (ss->size + 1) * sizeof(searchresult));
@@ -332,6 +340,7 @@ void *handle_search_onfile(const char *path, const char *filename, void *data)
                     strncpy(s->lines + slines + sescaped + 2, "\"", 1);
                     s->lines[slines + sescaped + 3] = '\0';
                 }
+                free(highlighted);
                 free(escaped);
             }
             if (line != NULL) {
