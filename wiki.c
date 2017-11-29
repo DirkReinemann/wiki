@@ -40,34 +40,6 @@ typedef struct {
     char *        keyword;
 } searchresults;
 
-int render_file(const char *relpath, const size_t srelpath)
-{
-    size_t ssrcfile, soutfile, scommand;
-
-    ssrcfile = sworkpath + ssrcdir + srelpath + 4;
-    char srcfile[ssrcfile];
-    snprintf(srcfile, ssrcfile, "%s/%s%s.md", workpath, SRCDIR, relpath);
-
-    soutfile = sworkpath + soutdir + srelpath + 6;
-    char outfile[soutfile];
-    snprintf(outfile, soutfile, "%s/%s%s.html", workpath, OUTDIR, relpath);
-
-    scommand = ssrcfile + soutfile + strlen(PANDOC_COMMAND);
-    char command[scommand];
-    snprintf(command, scommand, PANDOC_COMMAND, srcfile, outfile);
-
-    return system(command);
-}
-
-void create_outdir(const char *relpath, const size_t srelpath)
-{
-    size_t soutpath = sworkpath + soutdir + srelpath + 2;
-    char outpath[soutpath];
-
-    snprintf(outpath, soutpath, "%s/%s%s", workpath, OUTDIR, relpath);
-    mkdir(outpath, 0755);
-}
-
 void *traverse_directory(const char *path, void *(*ondir)(const char *path, const char *dirname, void *data),
                          void *(*onfile)(const char *path, const char *filename, void *data), void *data)
 {
@@ -100,47 +72,62 @@ void *traverse_directory(const char *path, void *(*ondir)(const char *path, cons
     return data;
 }
 
-void read_directory(const char *path, const size_t spath)
+void *convert_ondir(const char *path, const char *dirname, void *data)
 {
-    DIR *dir;
-    struct dirent *entry;
-    size_t size = 0;
+    size_t spath = strlen(path);
+    size_t sdirname = strlen(dirname);
+    size_t soutpath = spath - ssrcdir + soutdir + sdirname + 2;
+    char outpath[soutpath];
 
-    size = sworkpath + ssrcdir + spath + 2;
-    char basepath[size];
-    snprintf(basepath, size, "%s/%s/%s", workpath, SRCDIR, path);
+    strncpy(outpath, path, spath - ssrcdir);
+    strncpy(outpath + spath - ssrcdir, OUTDIR, soutdir);
+    strncpy(outpath + spath - ssrcdir + soutdir, "/", 1);
+    strncpy(outpath + spath - ssrcdir + soutdir + 1, dirname, sdirname);
+    outpath[soutpath - 1] = '\0';
 
-    if (!(dir = opendir(basepath)))
-        return;
-    if (!(entry = readdir(dir)))
-        return;
-
-    do {
-        size = spath + strlen(entry->d_name) + 2;
-        char relpath[size];
-        snprintf(relpath, size, "%s/%s", path, entry->d_name);
-
-        if (entry->d_type == DT_DIR) {
-            if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
-                continue;
-
-            create_outdir(relpath, size);
-            read_directory(relpath, size);
-        } else {
-            char *ending = strrchr(entry->d_name, '.');
-            if (ending && !strcmp(ending, ".md")) {
-                char *token = strtok(relpath, ".");
-                render_file(token, size - 3);
-            }
-        }
-    } while ((entry = readdir(dir)) != NULL);
-    closedir(dir);
+    mkdir(outpath, 0755);
+    return data;
 }
 
-void render()
+void *convert_onfile(const char *path, const char *filename, void *data)
 {
-    create_outdir("", 0);
-    read_directory("", 0);
+    const char *ending = strrchr(filename, '.');
+
+    if (ending && !strcmp(ending, ".md")) {
+        char *token = strtok((char *)filename, ".");
+        size_t stoken = strlen(token);
+
+        const char *relpath = path + sworkpath + ssrcdir + 1;
+        size_t srelpath = strlen(relpath);
+
+        size_t ssrcfile = sworkpath + ssrcdir + srelpath + stoken + 6;
+        char srcfile[ssrcfile];
+        snprintf(srcfile, ssrcfile, "%s/%s%s/%s.md", workpath, SRCDIR, relpath, token);
+
+        size_t soutfile = sworkpath + soutdir + srelpath + stoken + 8;
+        char outfile[soutfile];
+        snprintf(outfile, soutfile, "%s/%s%s/%s.html", workpath, OUTDIR, relpath, token);
+
+        size_t scommand = ssrcfile + soutfile + strlen(PANDOC_COMMAND);
+        char command[scommand];
+        snprintf(command, scommand, PANDOC_COMMAND, srcfile, outfile);
+
+        system(command);
+    }
+    return data;
+}
+
+void convert()
+{
+    size_t ssrcpath = strlen(workpath) + ssrcdir + 2;
+    char srcpath[ssrcpath];
+    size_t soutpath = strlen(workpath) + soutdir + 2;
+    char outpath[soutpath];
+
+    snprintf(srcpath, ssrcpath, "%s/%s", workpath, SRCDIR);
+    snprintf(outpath, soutpath, "%s/%s", workpath, OUTDIR);
+    mkdir(outpath, 0755);
+    traverse_directory(srcpath, convert_ondir, convert_onfile, NULL);
 }
 
 void set_default_header(struct mg_connection *connection, contenttype c)
@@ -443,7 +430,7 @@ void print_usage(const char *name)
     printf("Usage: %s [Options]\n\n", name);
     printf("Options:\n");
     printf("  %-20s %s\n", "-s", "start server");
-    printf("  %-20s %s\n", "-r", "render markdown");
+    printf("  %-20s %s\n", "-c", "convert markdown to html");
 }
 
 int main(int argc, char **argv)
@@ -470,8 +457,8 @@ int main(int argc, char **argv)
 
     if (strcmp(option, "-s") == 0) {
         server();
-    } else if (strcmp(option, "-r") == 0) {
-        render();
+    } else if (strcmp(option, "-c") == 0) {
+        convert();
     } else {
         print_usage(argv[0]);
         exit(1);
