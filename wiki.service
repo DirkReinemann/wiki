@@ -1,0 +1,8 @@
+[Unit]
+Description=local wiki server
+
+[Service]
+ExecStart=/usr/bin/wiki
+
+[Install]
+WantedBy=multi-user.target

@@ -17,3 +17,18 @@ render:
 
 clean-html:
 	-rm -rf html
+
+install: compile
+	-cp wiki.bin /usr/bin/wiki
+	-cp wiki.service /etc/systemd/system
+	-systemctl enable wiki.service
+	-systemctl start wiki.service
+	-rm -f /etc/systemd/system/wiki.service
+
+uninstall:
+	-systemctl stop wiki.service
+	-systemctl disable wiki.service
+	-rm -f /usr/bin/wiki
+
+update: compile
+	-cp wiki.bin /usr/bin/wiki

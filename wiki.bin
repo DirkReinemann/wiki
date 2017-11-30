@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# absolute path to the wiki directory
+wikidir="/home/dirk/Projects/Private/wiki"
+
+cd $wikidir
+./wiki -s > wiki.log 2>&1
