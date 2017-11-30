@@ -1,7 +1,6 @@
 # wiki
 
-This is my personal wiki that consists of markdown files. I run it as a local server with mongoose
-on port 8000.
+This is my personal wiki that consists of markdown files. I run it as a local mongoose server on port 8000.
 
 # commands
 
@@ -16,8 +15,15 @@ on port 8000.
 | make build | convert markdown to html and create other content for server |
 | make clean-outdir | delete html directory |
 
+## wiki
+
+| command | description |
+| - | - |
+| ./wiki -s | start local server on port 8000 |
+| ./wiki -c | convert markdown to html |
+
 ## wiki.sh
 
 | command | description |
 | - | - |
-| ./wiki.sh -s [KEYWORD] | search fopr keyword in markdown files |
+| ./wiki.sh -s [KEYWORD] | search for keyword in markdown files |
