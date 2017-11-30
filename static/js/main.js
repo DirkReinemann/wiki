@@ -233,4 +233,18 @@ $(document).ready(function () {
     $("#convert").click(function() {
         convert();
     });
+
+    $(window).scroll(function() {
+        if ($(this).scrollTop() >= 50) {
+            $("#back-to-top").show();
+        } else {
+            $("#back-to-top").hide();
+        }
+    });
+
+    $("#back-to-top").click(function() {
+        $("body,html").animate({
+            scrollTop : 0
+        });
+    });
 });
