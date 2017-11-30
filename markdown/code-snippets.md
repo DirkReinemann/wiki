@@ -61,35 +61,6 @@ def menu(): Unit = {
   }
 ```
 
-### levenshtein
-
-```scala
-import scala.math._
-
-object Levenshtein {
-   def minimum(i1: Int, i2: Int, i3: Int)=min(min(i1, i2), i3)
-   def distance(s1:String, s2:String)={
-      val dist=Array.tabulate(s2.length+1, s1.length+1){(j,i)=>if(j==0) i else if (i==0) j else 0}
-
-      for(j<-1 to s2.length; i<-1 to s1.length)
-         dist(j)(i)=if(s2(j-1)==s1(i-1)) dist(j-1)(i-1)
-	            else minimum(dist(j-1)(i)+1, dist(j)(i-1)+1, dist(j-1)(i-1)+1)
-
-      dist(s2.length)(s1.length)
-   }
-
-   def main(args: Array[String]): Unit = {
-      printDistance(args(0), args(1))
-   }
-
-   def printDistance(s1:String, s2:String) = {
-      val d = distance(s1, s2)
-      val p = d.toDouble / (s1.length + s2.length).toDouble
-      println("%s -> %s : %d, %f".format(s1, s2, d, p))
-   }
-
-```
-
 ## c
 
 ### measure duration in milliseconds
