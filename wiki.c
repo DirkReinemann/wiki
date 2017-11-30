@@ -8,7 +8,7 @@
 
 #include "mongoose.h"
 
-const char *PORT = "8001";
+const char *PORT = "127.0.0.1:8001";
 const char *SRCDIR = "markdown";
 const char *OUTDIR = "html";
 const char *STATICDIR = "static";

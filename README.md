@@ -15,8 +15,7 @@ This is my personal wiki that consists of markdown files. I run it as a local mo
 | make build | convert markdown to html and create other content for server |
 | make clean-outdir | delete html directory |
 | make install | copies wiki.bin to /usr/bin/wiki and adds, starts, enables systemd service (change wikidir in wiki.bin first!) |
-| make uninstall | removes wiki.bin from /usr/bin/wiki and systemd service  |
-| make update | copies wiki.bin to /usr/bin/wiki |
+| make uninstall | removes wiki.bin from /usr/bin/wiki and systemd service |
 
 ## wiki
 
