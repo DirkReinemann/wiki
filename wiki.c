@@ -397,6 +397,13 @@ void handle_search(struct mg_connection *connection, struct http_message *messag
     free(ss.keyword);
 }
 
+void handle_convert(struct mg_connection *connection)
+{
+    convert();
+    set_default_header(connection, TEXT);
+    mg_send_http_chunk(connection, "", 0);
+}
+
 void request_handler(struct mg_connection *connection, int event, void *data)
 {
     struct http_message *message = (struct http_message *)data;
@@ -409,6 +416,8 @@ void request_handler(struct mg_connection *connection, int event, void *data)
             handle_file(connection, message);
         else if (mg_vcmp(&message->uri, "/search") == 0)
             handle_search(connection, message);
+        else if (mg_vcmp(&message->uri, "/convert") == 0)
+            handle_convert(connection);
         else
             mg_serve_http(connection, message, opts);
         break;
