@@ -3,5 +3,5 @@
 # absolute path to the wiki directory
 wikidir="/home/dirk/Projects/Private/wiki"
 
-cd $wikidir
+cd $wikidir || exit 1
 ./wiki -s > wiki.log 2>&1

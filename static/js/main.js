@@ -180,6 +180,10 @@ function loadSearchResults(keyword) {
             content.append("<h1>SEARCH RESULTS</h1><br/>");
             content.append(result);
 
+            if (data.length === 0) {
+                content.append("<div class='row'><div class='col-md-12'>No search results.</div></div>");
+            }
+
             $(".filename").click(function() {
                 let h3 = $(this).find("h3");
                 loadFile(h3.text());

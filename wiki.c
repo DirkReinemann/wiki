@@ -291,7 +291,7 @@ void *handle_search_onfile(const char *path, const char *filename, void *data)
     size_t sfilename = strlen(filename);
     size_t sfilepath = strlen(path) + sfilename + 2;
     size_t srelpath = strlen(relpath);
-    size_t srelname = srelpath + sfilename + 2;
+    size_t srelname = srelpath + sfilename + 3;
     char filepath[sfilepath];
     char relname[srelname];
 
@@ -301,8 +301,8 @@ void *handle_search_onfile(const char *path, const char *filename, void *data)
     else
         snprintf(relname, srelname, "%s", filename);
 
-    strncpy(relname + srelname - 4, "html", 4);
-    relname[srelname] = '\0';
+    strncpy(relname + srelname - 5, "html", 4);
+    relname[srelname - 1] = '\0';
 
     FILE *file = fopen(filepath, "r");
     if (file != NULL) {
@@ -315,7 +315,6 @@ void *handle_search_onfile(const char *path, const char *filename, void *data)
                 size_t sreplacement = strlen(HIGHLIGHT_FORMAT) + strlen(ss->keyword);
                 char replacement[sreplacement];
                 snprintf(replacement, sreplacement, HIGHLIGHT_FORMAT, ss->keyword);
-
                 char *highlighted = replace_in_string(line, ss->keyword, replacement);
                 char *escaped = replace_in_string(highlighted, (char *)"\"", (char *)"\\\"");
                 size_t sescaped = strlen(escaped) - 1;
@@ -381,17 +380,18 @@ void handle_search(struct mg_connection *connection, struct http_message *messag
 
     traverse_directory(path, NULL, handle_search_onfile, &ss);
     set_default_header(connection, JSON);
+    mg_printf_http_chunk(connection, "%s", "[");
     for (int i = 0; i < ss.size; i++) {
         searchresult *s = ss.data + i;
-        if (i == 0)
-            mg_printf_http_chunk(connection, "[{\"filename\":\"%s\",\"lines\":%s}", s->filename, s->lines);
-        else if (i == ss.size - 1)
-            mg_printf_http_chunk(connection, ",{\"filename\":\"%s\",\"lines\":%s}]", s->filename, s->lines);
+        if (i == ss.size - 1)
+            mg_printf_http_chunk(connection, "{\"filename\":\"%s\",\"lines\":%s}", s->filename, s->lines);
         else
-            mg_printf_http_chunk(connection, ",{\"filename\":\"%s\",\"lines\":%s}", s->filename, s->lines);
+            mg_printf_http_chunk(connection, "{\"filename\":\"%s\",\"lines\":%s},", s->filename, s->lines);
+
         free(s->filename);
         free(s->lines);
     }
+    mg_printf_http_chunk(connection, "%s", "]");
     mg_send_http_chunk(connection, "", 0);
     free(ss.data);
     free(ss.keyword);
