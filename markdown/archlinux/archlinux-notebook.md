@@ -1,9 +1,4 @@
-
-
 # archlinux notebook
-
-[a relative link](archlinux-odroid.html)
-[a relative link](linux/test.html)
 
 ## gtk
 

@@ -1,10 +1,3 @@
-<!-- TOC depthFrom:1 depthTo:6 withLinks:1 updateOnSave:1 orderedList:0 -->
-
-- [samsung](#samsung)
-	- [install recovery image and custom rom on s3 mini](#install-recovery-image-and-custom-rom-on-s3-mini)
-
-<!-- /TOC -->
-
 # samsung
 
 ## install recovery image and custom rom on s3 mini
