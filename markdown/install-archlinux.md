@@ -1,4 +1,4 @@
-## ARCH LINUX
+# arch linux
 
 [LUKS](https://wiki.archlinux.org/index.php/Dm-crypt/Device_encryption#Encryption_options_for_LUKS_mode)
 
