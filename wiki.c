@@ -301,8 +301,6 @@ void *handle_search_onfile(const char *path, const char *filename, void *data)
     strncpy(relname + srelname - 5, "html", 4);
     relname[srelname - 1] = '\0';
 
-    printf("%s\n", relname);
-
     FILE *file = fopen(filepath, "r");
     if (file != NULL) {
         char *line = NULL;
