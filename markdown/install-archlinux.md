@@ -117,7 +117,7 @@ export EDITOR=vim
 sudo reboot
 ```
 
-## Yaourt
+## yaourt
 
 ```bash
 git clone https://aur.archlinux.org/package-query.git
@@ -130,18 +130,18 @@ makepkg -si
 cd ..
 ```
 
-## SSH
+## ssh
 
 ```bash
 sudo pacman -S openssh
 ssh-keygen -t rsa -b 4096 -C "dirk.reinemann@gmx.de"
 ```
 
-## BASH
+## bash
 
 * copy .inputrc and .bashrc from linux repository
 
-## VIM
+## vim
 
 * copy .vimrc from linux repository and install plugins
 
@@ -151,7 +151,7 @@ vim
 vim>:PluginInstall
 ```
 
-## THEME
+## theme
 
 ```bash
 pacman -S arc-icon-theme gtk3 gnome-themes-standard
@@ -159,21 +159,21 @@ yaourt adwaita-qt4 adwaita-qt5 xcursor-human
 update ~/.gtkrc-2.0 and ~/.config/gtk-3.0/settings.ini (theme adwaita, cursor human, icon arc)
 ```
 
-## TERMINATOR
+## terminator
 
 ```bash
 copy terminator conf
 sudo pacman -S python-dbus python3-dbus
 ```
 
-## WALLPAPER
+## wallpaper
 
 ```bash
 sudo pacman -S feh
 i3 config
 ```
 
-## I3
+## i3
 
 ```bash
 sudo pacman -S lm_sensors xdotool pulseaudio
@@ -181,13 +181,13 @@ volumecontrol.sh from linux repository
 yaourt i3blocks
 ```
 
-## APPLICATIONS
+## applications
 
 ```bash
 sudo pacman -S firefox thunderbird thunar lxappearance keychain ctags meld kile rhythmbox scala chromium keepassx easytag pdfsam zeal gparted wine openttd mednafen htop libreoffice nmap wireshark-gtk filezilla
 yaourt jdk intellij-idea-ultimate-edition spotify blockify sublime-text-dev skypeforlinux-bin gtkhash postman-bin
 ```
-## FIREFOX
+## firefox
 
 * adblock plus
 * better privacy
