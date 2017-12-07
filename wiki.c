@@ -318,7 +318,6 @@ void *handle_search_onfile(const char *path, const char *filename, void *data)
                 char replacement[sreplacement];
                 snprintf(replacement, sreplacement, HIGHLIGHT_FORMAT, match);
                 char *highlighted = replace_in_string(line, ss->keyword, replacement);
-                printf("%s\n", highlighted);
                 char *escaped = replace_in_string(highlighted, (char *)"\"", (char *)"\\\"");
                 size_t sescaped = strlen(escaped) - 1;
                 if (alloc == 0) {
