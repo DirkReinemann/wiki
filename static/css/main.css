@@ -11,8 +11,7 @@ a { cursor: pointer; }
 /* codestyle */
 div.sourceLine, a.sourceLine { display: inline-block; min-height: 1.25em; }
 a.sourceLine { color: inherit; pointer-events: none; text-decoration: inherit; }
-.sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; }
+.sourceCode { white-space: pre; }
 .kw { color: #007020; font-weight: bold; }
 .dt { color: #902000; }
 .dv { color: #40a070; }
