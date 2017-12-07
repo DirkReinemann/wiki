@@ -37,6 +37,7 @@ typedef struct {
 
 typedef struct {
     int           size;
+    int           skeyword;
     searchresult *data;
     char *        keyword;
 } searchresults;
@@ -260,7 +261,7 @@ char *replace_in_string(char *value, char *sequence, char *replacement)
     size_t rpos = 0;
     size_t sreplacement = strlen(replacement);
     size_t ssequence = strlen(sequence);
-    while ((match = strstr(match, sequence)) != NULL) {
+    while ((match = strcasestr(match, sequence)) != NULL) {
         size_t oldpos = pos;
         size_t length = pos - oldpos;
         size_t smatch = strlen(match);
@@ -308,10 +309,14 @@ void *handle_search_onfile(const char *path, const char *filename, void *data)
         size_t len = 0;
         int alloc = 0;
         while ((read = getline(&line, &len, file)) != -1) {
-            if (strstr(line, ss->keyword) != NULL) {
-                size_t sreplacement = strlen(HIGHLIGHT_FORMAT) + strlen(ss->keyword);
+            char *pos = strcasestr(line, ss->keyword);
+            if (pos != NULL) {
+                char match[ss->skeyword + 1];
+                strncpy(match, pos, ss->skeyword);
+                match[ss->skeyword] = '\0';
+                size_t sreplacement = strlen(HIGHLIGHT_FORMAT) + ss->skeyword;
                 char replacement[sreplacement];
-                snprintf(replacement, sreplacement, HIGHLIGHT_FORMAT, ss->keyword);
+                snprintf(replacement, sreplacement, HIGHLIGHT_FORMAT, match);
                 char *highlighted = replace_in_string(line, ss->keyword, replacement);
                 char *escaped = replace_in_string(highlighted, (char *)"\"", (char *)"\\\"");
                 size_t sescaped = strlen(escaped) - 1;
@@ -374,6 +379,7 @@ void handle_search(struct mg_connection *connection, struct http_message *messag
     ss.keyword = (char *)malloc((skeyword + 1) * sizeof(char));
     strncpy(ss.keyword, keyword, skeyword);
     ss.keyword[skeyword] = '\0';
+    ss.skeyword = skeyword;
 
     traverse_directory(path, NULL, handle_search_onfile, &ss);
     set_default_header(connection, JSON);
@@ -430,13 +436,16 @@ void server()
 
     mg_mgr_init(&mgr, NULL);
     connection = mg_bind(&mgr, PORT, request_handler);
-    mg_set_protocol_http_websocket(connection);
-    opts.document_root = ".";
-    printf("Starting wiki on port %s.\n", PORT);
+    if (connection == NULL) {
+        printf("Error while starting the wiki on '%s'.\n", PORT);
+    } else {
+        mg_set_protocol_http_websocket(connection);
+        opts.document_root = ".";
+        printf("Starting wiki on '%s'.\n", PORT);
 
-    for (;;)
-        mg_mgr_poll(&mgr, 1000);
-
+        for (;;)
+            mg_mgr_poll(&mgr, 1000);
+    }
     mg_mgr_free(&mgr);
 }
 
