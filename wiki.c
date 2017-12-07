@@ -257,17 +257,14 @@ char *replace_in_string(char *value, char *sequence, char *replacement)
 
     char *match = value;
     size_t pos = 0;
-    size_t oldpos = 0;
-    size_t smatch = 0;
     size_t rpos = 0;
-    size_t length = 0;
     size_t sreplacement = strlen(replacement);
     size_t ssequence = strlen(sequence);
     while ((match = strstr(match, sequence)) != NULL) {
-        oldpos = pos;
-        smatch = strlen(match);
+        size_t oldpos = pos;
+        size_t length = pos - oldpos;
+        size_t smatch = strlen(match);
         pos = svalue - smatch;
-        length = pos - oldpos;
         result = (char *)realloc(result, (rpos + length + sreplacement) * sizeof(char));
         if (length > 0)
             strncpy(result + rpos, value + oldpos, length);
@@ -303,6 +300,8 @@ void *handle_search_onfile(const char *path, const char *filename, void *data)
 
     strncpy(relname + srelname - 5, "html", 4);
     relname[srelname - 1] = '\0';
+
+    printf("%s\n", relname);
 
     FILE *file = fopen(filepath, "r");
     if (file != NULL) {

@@ -143,26 +143,29 @@ function loadFilelist() {
 }
 
 function getSearchResultRow(filename, lines) {
-    let template = `
+    let items = "";
+    lines.forEach(function(element) {
+        items += "<li class='list-group-item'>" + element + "</li>";
+    });
+    let result = `
         <div class='row'>
             <div class='col-md-12'>
                 <div class='panel panel-default'>
                     <div class='panel-heading filename'>
-                        <h3 class='panel-title'>{{filename}}</h3>
+    `;
+    result += "<h3 class='panel-title'>" + filename + "</h3>";
+    result += `
                     </div>
                     <div class='panel-body'>
-                        <ul class='list-group'>{{lines}}</ul>
+    `;
+    result += "<ul class='list-group'>" + items + "</ul>";
+    result += `
                     </div>
                 </div>
             </div>
         </div>
     `;
-
-    let items = "";
-    lines.forEach(function(element) {
-        items += "<li class='list-group-item'>" + element + "</li>";
-    });
-    return template.replace("{{filename}}", filename).replace("{{lines}}", items);
+    return result;
 }
 
 function loadSearchResults(keyword) {
