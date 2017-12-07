@@ -5,6 +5,8 @@ a { cursor: pointer; }
 .filename:hover { background-color: #337ab7; cursor: pointer; }
 .highlight { background-color: #337ab7; color: #ffffff; font-weight: bold; }
 .return-to-top { bottom: 20px; display: none; height: 50px; position: fixed; right: 20px; width: 50px; }
+.resultbadge { display: table-cell; padding-right: 15px; vertical-align: middle; }
+.resulttext { display: table-cell; }
 
 /* codestyle */
 div.sourceLine, a.sourceLine { display: inline-block; min-height: 1.25em; }

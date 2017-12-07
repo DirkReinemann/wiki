@@ -142,10 +142,25 @@ function loadFilelist() {
     });
 }
 
+function formatNumber(number) {
+    let result = "";
+    if (number > 99) {
+        result += number;
+    }
+    else if (number > 9) {
+        result += "0" + number;
+    }
+    else {
+        result += "00" + number;
+    }
+    result += ".";
+    return result;
+}
+
 function getSearchResultRow(filename, lines) {
     let items = "";
-    lines.forEach(function(element) {
-        items += "<li class='list-group-item'>" + element + "</li>";
+    lines.forEach(function(element, index) {
+        items += "<li class='list-group-item'><span class='resultbadge'><span class='badge'> " + formatNumber(index + 1) + "</span></span><span class='resulttext'>" + element + "</span></li>";
     });
     let result = `
         <div class='row'>
