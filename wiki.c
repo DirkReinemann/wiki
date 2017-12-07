@@ -263,9 +263,9 @@ char *replace_in_string(char *value, char *sequence, char *replacement)
     size_t ssequence = strlen(sequence);
     while ((match = strcasestr(match, sequence)) != NULL) {
         size_t oldpos = pos;
-        size_t length = pos - oldpos;
         size_t smatch = strlen(match);
         pos = svalue - smatch;
+        size_t length = pos - oldpos;
         result = (char *)realloc(result, (rpos + length + sreplacement) * sizeof(char));
         if (length > 0)
             strncpy(result + rpos, value + oldpos, length);
@@ -318,6 +318,7 @@ void *handle_search_onfile(const char *path, const char *filename, void *data)
                 char replacement[sreplacement];
                 snprintf(replacement, sreplacement, HIGHLIGHT_FORMAT, match);
                 char *highlighted = replace_in_string(line, ss->keyword, replacement);
+                printf("%s\n", highlighted);
                 char *escaped = replace_in_string(highlighted, (char *)"\"", (char *)"\\\"");
                 size_t sescaped = strlen(escaped) - 1;
                 if (alloc == 0) {
