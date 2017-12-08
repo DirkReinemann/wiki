@@ -92,7 +92,7 @@ function loadFile(filename, keyword = "", index = 0) {
                 searchElements(file, keyword.toLowerCase(), results);
                 if (results.length >= index) {
                     $("html,body").animate({
-                        scrollTop: results[index - 1].offset().top - 50
+                        scrollTop: results[index - 1].offset().top - 10
                     });
                 }
             }
