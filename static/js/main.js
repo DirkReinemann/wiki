@@ -89,12 +89,32 @@ function loadFile(filename, keyword = "", index = 0) {
             if (keyword.length > 0 && index > 0) {
                 let file = $("#file");
                 let results = [];
-                searchElements(file, keyword.toLowerCase(), results);
+                keyword = keyword.toLowerCase();
+                searchElements(file, keyword, results);
                 if (results.length >= index) {
+                    let result = results[index -1];
                     $("html,body").animate({
-                        scrollTop: results[index - 1].offset().top - 10
+                        scrollTop: result.offset().top - 10
                     });
+
                 }
+
+                results.forEach(function(result) {
+                    let html = result.html();
+                    let highlighted = "";
+                    let pos = 0;
+                    let oldpos = 0;
+                    let len = keyword.length;
+                    while ((pos = html.toLowerCase().indexOf(keyword, pos)) !== -1) {
+                        let val = html.substring(pos, pos + len);
+                        highlighted += html.substr(oldpos, pos);
+                        highlighted += "<span class='highlight'>" + val + "</span>";
+                        oldpos = pos;
+                        pos++;
+                    }
+                    highlighted += html.substr(oldpos + len);
+                    result.html(highlighted);
+                });
             }
 
             $("#filter").keyup(function() {
