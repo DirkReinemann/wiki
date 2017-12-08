@@ -1,3 +1,14 @@
+<!-- toc -->
+  * [archlinux raspberrypi](#archlinux-raspberrypi)
+    * [display](#display)
+  * [install system](#install-system)
+    * [sudo](#sudo)
+    * [xorg](#xorg)
+    * [autologin](#autologin)
+    * [Pulseaudio](#pulseaudio)
+<!-- toc -->
+
+
 # archlinux raspberrypi
 
 ## display

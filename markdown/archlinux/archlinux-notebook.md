@@ -1,3 +1,17 @@
+<!-- toc -->
+  * [archlinux notebook](#archlinux-notebook)
+    * [gtk](#gtk)
+      * [remove recently used files](#remove-recently-used-files)
+      * [set recent file limit](#set-recent-file-limit)
+    * [power management thinkpad](#power-management-thinkpad)
+    * [manpage highlighting](#manpage-highlighting)
+    * [change qt theme](#change-qt-theme)
+    * [vim ctags](#vim-ctags)
+    * [packages](#packages)
+    * [change thinkfan level](#change-thinkfan-level)
+<!-- toc -->
+
+
 # archlinux notebook
 
 ## gtk

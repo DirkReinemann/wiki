@@ -1,6 +1,20 @@
+<!-- toc -->
+  * [todo](#todo)
+    * [Configuration](#configuration)
+    * [Blog](#blog)
+    * [Movies and Series](#movies-and-series)
+    * [Download](#download)
+    * [Music](#music)
+    * [Books](#books)
+    * [Doku](#doku)
+    * [Programming](#programming)
+    * [Wiki](#wiki)
+<!-- toc -->
+
+
 # todo
 
-## Configuration / Programming
+## Configuration
 
 * configure global gitignore
 
@@ -68,7 +82,7 @@
 * House of Dolls
 * 1984
 
-## Doku:
+## Doku
 
 ## Programming
 

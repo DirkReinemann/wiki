@@ -1,3 +1,20 @@
+<!-- toc -->
+  * [code snippets](#code-snippets)
+    * [bash](#bash)
+      * [hash string](#hash-string)
+    * [scala](#scala)
+      * [hash string](#hash-string)
+      * [user input menu](#user-input-menu)
+    * [c](#c)
+      * [measure duration in milliseconds](#measure-duration-in-milliseconds)
+      * [copy file](#copy-file)
+    * [docker](#docker)
+    * [git](#git)
+      * [add repository to github](#add-repository-to-github)
+      * [delete remote branch](#delete-remote-branch)
+<!-- toc -->
+
+
 # code snippets
 
 ## bash

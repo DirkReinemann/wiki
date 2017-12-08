@@ -1,3 +1,18 @@
+<!-- toc -->
+  * [arch linux](#arch-linux)
+    * [yaourt](#yaourt)
+    * [ssh](#ssh)
+    * [bash](#bash)
+    * [vim](#vim)
+    * [theme](#theme)
+    * [terminator](#terminator)
+    * [wallpaper](#wallpaper)
+    * [i3](#i3)
+    * [applications](#applications)
+    * [firefox](#firefox)
+<!-- toc -->
+
+
 # arch linux
 
 [LUKS](https://wiki.archlinux.org/index.php/Dm-crypt/Device_encryption#Encryption_options_for_LUKS_mode)

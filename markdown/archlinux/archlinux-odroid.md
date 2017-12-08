@@ -1,3 +1,27 @@
+<!-- toc -->
+  * [archlinux odroid](#archlinux-odroid)
+    * [install image](#install-image)
+    * [install system](#install-system)
+      * [home](#home)
+      * [odroid](#odroid)
+      * [home](#home)
+      * [odroid](#odroid)
+    * [autologin](#autologin)
+    * [bluetooth configuration](#bluetooth-configuration)
+    * [i3 configuration](#i3-configuration)
+      * [home](#home)
+    * [fontawesome](#fontawesome)
+  * [gtk theme](#gtk-theme)
+    * [vnc](#vnc)
+    * [dunst and rofi](#dunst-and-rofi)
+    * [ssh forward application](#ssh-forward-application)
+    * [pulseaudio sound forward](#pulseaudio-sound-forward)
+      * [odroid](#odroid)
+    * [notebook](#notebook)
+    * [chromium](#chromium)
+<!-- toc -->
+
+
 # archlinux odroid
 
 ## install image
@@ -99,7 +123,6 @@ sudo ntpd -gq
 sudo pacman -S xorg xorg-server xorg-xinit xorg-drivers i3 dmenu rofi dunst terminator xterm python-dbus python2-dbus
 ```
 
-
 ```bash
 vi ~/.bash_profile
 
@@ -121,7 +144,6 @@ vi ~/.xprofile
 xrandr --output HDMI-1 --primary --mode 1280x800 --pos 0x0 --rotate normal
 ```
 
-
 ```bash
 vi ~/.xinitrc
 
@@ -131,7 +153,6 @@ vi ~/.xinitrc
 
 exec i3
 ```
-
 
 ```bash
 sudo vi /etc/X11/xorg.conf.d/00-keyboard.conf

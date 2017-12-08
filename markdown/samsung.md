@@ -1,3 +1,9 @@
+<!-- toc -->
+  * [samsung](#samsung)
+    * [install recovery image and custom rom on s3 mini](#install-recovery-image-and-custom-rom-on-s3-mini)
+<!-- toc -->
+
+
 # samsung
 
 ## install recovery image and custom rom on s3 mini

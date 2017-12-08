@@ -3,6 +3,7 @@
 #include <string.h>
 #include <dirent.h>
 #include <unistd.h>
+#include <regex.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -74,6 +75,159 @@ void *traverse_directory(const char *path, void *(*ondir)(const char *path, cons
     return data;
 }
 
+char *replace_in_string(char *value, char *sequence, char *replacement)
+{
+    char *result = (char *)malloc(1 * sizeof(char));
+
+    result[0] = '\0';
+    if (value == NULL)
+        return result;
+
+    size_t svalue = strlen(value);
+    if (svalue == 0)
+        return result;
+
+    char *match = value;
+    size_t pos = 0;
+    size_t rpos = 0;
+    size_t sreplacement = strlen(replacement);
+    size_t ssequence = strlen(sequence);
+    while ((match = strcasestr(match, sequence)) != NULL) {
+        size_t oldpos = pos;
+        size_t smatch = strlen(match);
+        pos = svalue - smatch;
+        size_t length = pos - oldpos;
+        result = (char *)realloc(result, (rpos + length + sreplacement) * sizeof(char));
+        if (length > 0)
+            strncpy(result + rpos, value + oldpos, length);
+        strncpy(result + rpos + length, replacement, sreplacement);
+        rpos = rpos + length + sreplacement;
+        match++;
+        pos += ssequence;
+    }
+    size_t rest = svalue - pos;
+    result = (char *)realloc(result, (rpos + rest + 1) * sizeof(char));
+    strncpy(result + rpos, value + pos, rest);
+    rpos += rest;
+    result[rpos] = '\0';
+    return result;
+}
+
+void str_to_lower(char *value)
+{
+    for (int i = 0; i < strlen(value) - 1; i++) {
+        value[i] = tolower(value[i]);
+    }
+}
+
+void write_markdown_toc(const char *filename, const char *toc)
+{
+    size_t sfilename = strlen(filename);
+    char tempfile[sfilename + 5];
+    snprintf(tempfile, sfilename + 5, "%s.tmp", filename);
+
+    FILE *fsrc = fopen(filename, "r");
+    if (fsrc != NULL) {
+        FILE *fdst = fopen(tempfile, "w");
+        if (fdst != NULL) {
+            size_t size = 0;
+            char *line = NULL;
+            int ignore = 0;
+            int empty = 0;
+            ssize_t read = 0;
+            regex_t regexcs;
+            regcomp(&regexcs, "^<!-- toc -->", 0);
+
+            fputs("<!-- toc -->\n", fdst);
+            fputs(toc, fdst);
+            fputs("<!-- toc -->\n", fdst);
+            fputs("\n", fdst);
+            while ((read = getline(&line, &size, fsrc)) != -1) {
+                if (read == 1)
+                    empty++;
+                else
+                    empty = 0;
+
+                if (!regexec(&regexcs, line, 0, NULL, 0)) {
+                    if (ignore == 0)
+                        ignore = 1;
+                    else
+                        ignore = 0;
+                } else {
+                    if (ignore == 0 && empty < 2)
+                        fputs(line, fdst);
+                }
+            }
+            if (line != NULL)
+                free(line);
+            fclose(fdst);
+        }
+        fclose(fsrc);
+    }
+
+    if (remove(filename) == 0) {
+        rename(tempfile, filename);
+        remove(tempfile);
+    }
+}
+
+void create_markdown_toc(const char *filename)
+{
+    FILE *file = fopen(filename, "r");
+    if (file != NULL) {
+        char *line = NULL;
+        size_t size = 0;
+        regex_t regexhash;
+        regcomp(&regexhash, "^#", 0);
+        regex_t regexcode;
+        regcomp(&regexcode, "^```", 0);
+        int code = 0;
+        char *toc = (char *)malloc(1 * sizeof(char));
+        int pos = 0;
+        const char *template = "* [%s](#%s)\n";
+        size_t stemplate = strlen(template) - 4;
+        while (getline(&line, &size, file) != -1) {
+            if (!regexec(&regexcode, line, 0, NULL, 0)) {
+                if (code == 0)
+                    code = 1;
+                else
+                    code = 0;
+            }
+            if (!regexec(&regexhash, line, 0, NULL, 0) && code == 0) {
+                size_t sline = strlen(line);
+                for(int i = 0; i < sline; i++) { 
+                    if (line[i] == '#') {
+                        toc= (char *)realloc(toc, (pos + 3) * sizeof(char));
+                        strncpy(toc + pos, "  ", 2);
+                        pos += 2;
+                    } else {
+                        size_t sname = sline - i - 2;
+                        char name[sname + 1];
+                        strncpy(name, line + i + 1, sname);
+                        name[sname] = '\0';
+                        char *link = replace_in_string(name, " ", "-");
+                        str_to_lower(link);
+                        size_t slink = strlen(link);
+                        size_t length = stemplate + sname + slink;
+                        toc = (char *)realloc(toc, (pos + length + 1) * sizeof(char));
+                        snprintf(toc + pos, length + 1, template, name, link);
+                        pos += length;
+                        free(link);
+                        break;
+                    }
+                }
+            }
+        }
+        if (line != NULL)
+            free(line);
+        fclose(file);
+        toc[pos] = '\0';
+        /* printf("%s", toc); */
+        write_markdown_toc(filename, toc);
+        free(toc);
+    }
+}
+
 void *convert_ondir(const char *path, const char *dirname, void *data)
 {
     size_t spath = strlen(path);
@@ -113,6 +267,8 @@ void *convert_onfile(const char *path, const char *filename, void *data)
         size_t scommand = ssrcfile + soutfile + strlen(PANDOC_COMMAND);
         char command[scommand];
         snprintf(command, scommand, PANDOC_COMMAND, srcfile, outfile);
+
+        create_markdown_toc(srcfile);
 
         system(command);
     }
@@ -242,44 +398,6 @@ void handle_file(struct mg_connection *connection, struct http_message *message)
         set_error_header(connection);
     }
     mg_send_http_chunk(connection, "", 0);
-}
-
-char *replace_in_string(char *value, char *sequence, char *replacement)
-{
-    char *result = (char *)malloc(1 * sizeof(char));
-
-    result[0] = '\0';
-    if (value == NULL)
-        return result;
-
-    size_t svalue = strlen(value);
-    if (svalue == 0)
-        return result;
-
-    char *match = value;
-    size_t pos = 0;
-    size_t rpos = 0;
-    size_t sreplacement = strlen(replacement);
-    size_t ssequence = strlen(sequence);
-    while ((match = strcasestr(match, sequence)) != NULL) {
-        size_t oldpos = pos;
-        size_t smatch = strlen(match);
-        pos = svalue - smatch;
-        size_t length = pos - oldpos;
-        result = (char *)realloc(result, (rpos + length + sreplacement) * sizeof(char));
-        if (length > 0)
-            strncpy(result + rpos, value + oldpos, length);
-        strncpy(result + rpos + length, replacement, sreplacement);
-        rpos = rpos + length + sreplacement;
-        match++;
-        pos += ssequence;
-    }
-    size_t rest = svalue - pos;
-    result = (char *)realloc(result, (rpos + rest + 1) * sizeof(char));
-    strncpy(result + rpos, value + pos, rest);
-    rpos += rest;
-    result[rpos] = '\0';
-    return result;
 }
 
 void *handle_search_onfile(const char *path, const char *filename, void *data)

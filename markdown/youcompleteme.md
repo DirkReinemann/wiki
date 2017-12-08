@@ -1,3 +1,10 @@
+<!-- toc -->
+  * [youcompleteme](#youcompleteme)
+    * [compile](#compile)
+    * [display error messages](#display-error-messages)
+<!-- toc -->
+
+
 # youcompleteme
 
 [Website](https://valloric.github.io/YouCompleteMe/)

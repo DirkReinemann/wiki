@@ -1,3 +1,71 @@
+<!-- toc -->
+  * [linux](#linux)
+    * [ffmpeg](#ffmpeg)
+      * [trim audio file and save it to file](#trim-audio-file-and-save-it-to-file)
+      * [capture audio from default output and encode it to mp3 and save it to file](#capture-audio-from-default-output-and-encode-it-to-mp3-and-save-it-to-file)
+    * [pulseaudio](#pulseaudio)
+      * [list audio sources](#list-audio-sources)
+    * [putty](#putty)
+      * [ssh key to pkk](#ssh-key-to-pkk)
+    * [sudoers](#sudoers)
+      * [enable systemd service for group](#enable-systemd-service-for-group)
+    * [mkfsdos](#mkfsdos)
+      * [create fat32 partition](#create-fat32-partition)
+    * [shred](#shred)
+      * [wipe disk with zeros](#wipe-disk-with-zeros)
+    * [xephyr](#xephyr)
+      * [start virtual xserver](#start-virtual-xserver)
+    * [xrandr](#xrandr)
+      * [add virtual display](#add-virtual-display)
+      * [change display resolution](#change-display-resolution)
+    * [oneliners](#oneliners)
+      * [killa all processes by name](#killa-all-processes-by-name)
+      * [check if file is a valid pdf file](#check-if-file-is-a-valid-pdf-file)
+    * [apache](#apache)
+      * [logfile format in bash](#logfile-format-in-bash)
+    * [ssh](#ssh)
+      * [ssh port forwarding](#ssh-port-forwarding)
+      * [ssh tunnel](#ssh-tunnel)
+    * [firefox](#firefox)
+      * [bookmark backup file](#bookmark-backup-file)
+      * [trust certificate permanently](#trust-certificate-permanently)
+    * [journalctl](#journalctl)
+      * [remove journal logs and keep minimum](#remove-journal-logs-and-keep-minimum)
+      * [print all logs from date](#print-all-logs-from-date)
+    * [steam](#steam)
+      * [change cs fonts](#change-cs-fonts)
+    * [thunderbird](#thunderbird)
+      * [read thunderbird addressbook from mozilla MORK format](#read-thunderbird-addressbook-from-mozilla-mork-format)
+    * [rhythmbox](#rhythmbox)
+      * [extract radio stations](#extract-radio-stations)
+    * [pandoc](#pandoc)
+      * [convert markdown to html with code highlighting](#convert-markdown-to-html-with-code-highlighting)
+    * [cracklib](#cracklib)
+      * [check password quality](#check-password-quality)
+    * [steghide](#steghide)
+      * [hide information inside another file](#hide-information-inside-another-file)
+    * [luks](#luks)
+      * [remove encryption from hard disk](#remove-encryption-from-hard-disk)
+    * [pwgen](#pwgen)
+      * [generate password](#generate-password)
+    * [bchunk](#bchunk)
+      * [bin and cue to iso file](#bin-and-cue-to-iso-file)
+    * [mdf2iso](#mdf2iso)
+      * [mdf to iso file](#mdf-to-iso-file)
+    * [mount](#mount)
+      * [mount iso](#mount-iso)
+    * [xmlstarlet](#xmlstarlet)
+      * [select elements](#select-elements)
+    * [grep](#grep)
+      * [grep everythink between quotes](#grep-everythink-between-quotes)
+    * [locale](#locale)
+      * [set correct locale settings](#set-correct-locale-settings)
+    * [printer](#printer)
+      * [find ipp url](#find-ipp-url)
+      * [lpd](#lpd)
+<!-- toc -->
+
+
 # linux
 
 ## ffmpeg
@@ -8,7 +76,7 @@
 ffmpeg -i input.mp3 -ss 00:00:10 -to 00:01:10 -c copy output.mp3
 ```
 
-### capture audio from default output, encode it to mp3 and save it to file
+### capture audio from default output and encode it to mp3 and save it to file
 
 ```bash
 ffmpeg -f pulse -i default -codec:a libmp3lame -qscale:a 2 output.mp3
@@ -32,7 +100,7 @@ puttygen id_rsa -o id_rsa.ppk
 
 ## sudoers
 
-### Enable systemd service for group (example blutooth)
+### enable systemd service for group
 
 ```bash
 sudo visudo
@@ -137,7 +205,7 @@ $HOME/.mozilla/firefox/[A-Za-z0-9]*.default/bookmarkbackups
 ls -1 $HOME/.mozilla/firefox/[PROFILE]/bookmarkbackups | sort -r | head -1
 ```
 
-# trust certificate permanently
+### trust certificate permanently
 
 1. open website with untrusted certificates
 2. Advanced -> Add Exception... -> View... -> Details -> Export... -> Save Certificate -> Close -> Cancel
@@ -173,7 +241,7 @@ vim> GameConsole_Mono
 
 ## thunderbird
 
-### read thunderbird addressbook from mozilla MORK (.mab) format
+### read thunderbird addressbook from mozilla MORK format
 
 [wiki](https://wiki.mozilla.org/Mork)
 
@@ -256,7 +324,7 @@ pwgen 16 1
 
 ## bchunk
 
-### bin/cue to iso file
+### bin and cue to iso file
 
 ```bash
 sudo pacman -S bchunk
