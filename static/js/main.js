@@ -45,13 +45,36 @@ function getFileListRow(filelist) {
     return template.replace("{{items}}", items);
 }
 
+function searchElements(root, keyword, results) {
+    let children = root.children();
+    if (children.length > 0) {
+        let content = root.text();
+        children.each(function() {
+            content = content.replace($(this).text(), "");
+        });
+        content = content.trim();
+        if (content.length > 0 && content.toLowerCase().indexOf(keyword) > -1) {
+            results.push(root);
+        }
+
+        children.each(function() {
+            searchElements($(this), keyword, results);
+        });
+    }
+    else {
+        if (root.text().toLowerCase().indexOf(keyword) > -1) {
+            results.push(root);
+        }
+    }
+}
+
 function clearFileFilterInput() {
-    $("#file").contents().each(function() {
+    $("#file").find("*").each(function() {
         $(this).show();
     });
 }
 
-function loadFile(filename) {
+function loadFile(filename, keyword = "", index = 0) {
     $.ajax({
         url: "file",
         method: "POST",
@@ -63,17 +86,31 @@ function loadFile(filename) {
             content.append(getFilterButtonRow());
             content.append("<div class='row'><div class='col-md-12' id='file'>" + data + "</div></div>");
 
+            if (keyword.length > 0 && index > 0) {
+                let file = $("#file");
+                let results = [];
+                searchElements(file, keyword.toLowerCase(), results);
+                if (results.length >= index) {
+                    $("html,body").animate({
+                        scrollTop: results[index - 1].offset().top - 50
+                    });
+                }
+            }
+
             $("#filter").keyup(function() {
                 let value = $(this).val().trim().toLowerCase();
                 if (value.length > 0) {
-                    $("#file").contents().each(function() {
-                        let element = $(this);
-                        if (element.text().toLowerCase().indexOf(value) !== -1) {
-                            element.show();
-                        }
-                        else {
-                            element.hide();
-                        }
+                    let file = $("#file");
+                    let results = [];
+                    searchElements(file, value, results);
+
+                    file.find("*").each(function() {
+                        $(this).hide();
+                    });
+
+                    results.forEach(function(element) {
+                        element.show();
+                        element.parents().show();
                     });
                 }
                 else {
@@ -157,10 +194,15 @@ function formatNumber(number) {
     return result;
 }
 
-function getSearchResultRow(filename, lines) {
+function getSearchResultRow(filename, lines, keyword) {
     let items = "";
     lines.forEach(function(element, index) {
-        items += "<li class='list-group-item'><span class='resultbadge'><span class='badge'> " + formatNumber(index + 1) + "</span></span><span class='resulttext'>" + element + "</span></li>";
+        index++;
+        items += "<li class='list-group-item fileresult' data-filename='" + filename;
+        items += "' data-index='" + index;
+        items += "' data-keyword='" + keyword + "'><span class='resultbadge'>";
+        items += "<span class='badge'> " + formatNumber(index) + "</span></span>";
+        items += "<span class='resulttext'>" + element + "</span></li>";
     });
     let result = `
         <div class='row'>
@@ -191,7 +233,7 @@ function loadSearchResults(keyword) {
         success: function(data) {
             let result = "";
             data.forEach(function(element) {
-                result += getSearchResultRow(element.filename, element.lines);
+                result += getSearchResultRow(element.filename, element.lines, keyword);
             });
             let content = $("#content");
             content.empty();
@@ -205,6 +247,14 @@ function loadSearchResults(keyword) {
             $(".filename").click(function() {
                 let h3 = $(this).find("h3");
                 loadFile(h3.text());
+            });
+
+            $(".fileresult").click(function() {
+                let li = $(this);
+                let filename = li.attr("data-filename");
+                let index = li.attr("data-index");
+                let keyword = li.attr("data-keyword");
+                loadFile(filename, keyword, index);
             });
         },
         error: function() {
