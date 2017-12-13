@@ -3,6 +3,8 @@ Description=local wiki server
 
 [Service]
 ExecStart=/usr/bin/wiki
+User=dirk
+Group=users
 
 [Install]
 WantedBy=multi-user.target

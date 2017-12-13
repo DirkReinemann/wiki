@@ -8,6 +8,7 @@
     * [c](#c)
       * [measure duration in milliseconds](#measure-duration-in-milliseconds)
       * [copy file](#copy-file)
+      * [unused parameter macro](#unused-parameter-macro)
     * [docker](#docker)
     * [git](#git)
       * [add repository to github](#add-repository-to-github)
@@ -112,6 +113,20 @@ int copy_file(const char *src, const char *dst)
 
     while ((c = fgetc(fsrc)) != EOF)
         fputc(c, fdst);
+
+    return 0;
+}
+```
+
+### unused parameter macro
+
+```c
+#define UNUSED(x) (void)(x)
+
+int main(int argc, char **argv)
+{
+    UNUSED(argc);
+    UNUSED(argv);
 
     return 0;
 }
