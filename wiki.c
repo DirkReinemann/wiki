@@ -31,12 +31,12 @@ typedef enum {
     TEXT
 } contenttype;
 
-typedef struct {
+typedef struct searchresult {
     char *filename;
     char *lines;
 } searchresult;
 
-typedef struct {
+typedef struct searchresults {
     int           size;
     int           skeyword;
     searchresult *data;
@@ -222,7 +222,6 @@ void create_markdown_toc(const char *filename)
             free(line);
         fclose(file);
         toc[pos] = '\0';
-        /* printf("%s", toc); */
         write_markdown_toc(filename, toc);
         free(toc);
     }
