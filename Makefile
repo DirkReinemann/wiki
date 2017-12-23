@@ -9,10 +9,10 @@ compile:
 clean:
 	-rm -f wiki
 
-start:
+start: compile
 	./wiki -s
 
-render:
+render: compile
 	./wiki -r
 
 clean-html:

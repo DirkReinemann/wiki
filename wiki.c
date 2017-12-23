@@ -17,6 +17,8 @@ const char *PANDOC_COMMAND = "pandoc %s -o %s";
 const char *CONTENT_TYPE_JSON = "application/json";
 const char *CONTENT_TYPE_TEXT = "text/plain";
 const char *HIGHLIGHT_FORMAT = "<span class='highlight'>%s</span>";
+const char *LINK_MARKDOWN_PATTERN = "href=\"%s\"";
+const char *LINK_MARKDOWN_REPLACE = "onclick=\"loadFile('%s')\"";
 
 char workpath[512];
 
@@ -26,7 +28,7 @@ size_t soutdir = 0;
 
 struct mg_serve_http_opts opts;
 
-typedef enum {
+typedef enum contenttype {
     JSON,
     TEXT
 } contenttype;
@@ -42,6 +44,15 @@ typedef struct searchresults {
     searchresult *data;
     char *        keyword;
 } searchresults;
+
+typedef struct fileentry {
+    char *relname;
+} fileentry;
+
+typedef struct fileentries {
+    int        size;
+    fileentry *data;
+} fileentries;
 
 void *traverse_directory(const char *path, void *(*ondir)(const char *path, const char *dirname, void *data),
                          void *(*onfile)(const char *path, const char *filename, void *data), void *data)
@@ -115,9 +126,110 @@ char *replace_in_string(char *value, char *sequence, char *replacement)
 
 void str_to_lower(char *value)
 {
-    for (int i = 0; i < strlen(value) - 1; i++) {
+    size_t size = strlen(value);
+    for (unsigned long i = 0; i < size - 1; i++) {
         value[i] = tolower(value[i]);
     }
+}
+
+fileentry *contains_filename(fileentries *fs, const char *line)
+{
+    fileentry *result = NULL;
+    for (int i = 0; i < fs->size && result == NULL; i++) {
+        fileentry *f = fs->data + i;
+        if (strstr(line, f->relname) != NULL)
+            result = f;
+    }
+    return result;
+}
+
+void *link_markdown_link_onfile(const char *path, const char *filename, void *data)
+{
+    fileentries *fs = (fileentries *)data;
+    size_t ssrcpath = strlen(path) + strlen(filename) + 2;
+    char srcpath[ssrcpath];
+    snprintf(srcpath, ssrcpath, "%s/%s", path, filename);
+    size_t soutpath = ssrcpath + 4;
+    char outpath[soutpath];
+    snprintf(outpath, soutpath, "%s.tmp", srcpath);
+    FILE *src = fopen(srcpath, "r");
+    FILE *out = fopen(outpath, "w");
+    if (src != NULL && out != NULL) {
+        size_t size = 0;
+        ssize_t read = 0;
+        char *line = NULL;
+        while ((read = getline(&line, &size, src)) != -1) {
+            fileentry *f = contains_filename(fs, line);
+            if (f != NULL) {
+                size_t srelname = strlen(f->relname);
+                size_t snewname = srelname + 2;
+                char newname[snewname + 1];
+                strncpy(newname, f->relname, srelname - 2);
+                strncpy(newname + srelname - 2, "html", 4);
+                newname[snewname] = '\0';
+                size_t spattern = strlen(LINK_MARKDOWN_PATTERN) + strlen(f->relname);
+                char pattern[spattern];
+                snprintf(pattern, spattern, LINK_MARKDOWN_PATTERN, f->relname);
+                size_t sreplace = strlen(LINK_MARKDOWN_REPLACE) + strlen(newname);
+                char replace[sreplace];
+                snprintf(replace, sreplace, LINK_MARKDOWN_REPLACE, newname);
+                char *newline = replace_in_string(line, pattern, replace);
+                fputs(newline, out);
+                free(newline);
+            }
+            else {
+                fputs(line, out);
+            }
+        }
+        if (line != NULL)
+            free(line);
+        fclose(src);
+        fclose(out);
+        if (remove(srcpath) == 0) {
+            rename(outpath, srcpath);
+            remove(outpath);
+        }
+    }
+    return data;
+}
+
+void *link_markdown_collect_onfile(const char *path, const char *filename, void *data)
+{
+    fileentries *fs = (fileentries *)data;
+    fs->data = (fileentry *)realloc(fs->data, (fs->size + 1) * sizeof(fileentry));
+    const char *relpath = path + sworkpath + ssrcdir + 1;
+    size_t srelpath = strlen(relpath);
+    size_t sfilename = strlen(filename);
+    fileentry *f = fs->data + fs->size;
+    f->relname = (char *)malloc((sfilename + 1) * sizeof(char));
+    if (srelpath > 0) {
+        relpath++;
+        f->relname = (char *)realloc(f->relname, (sfilename + srelpath) * sizeof(char));
+        strncpy(f->relname, relpath, srelpath - 1);
+        strncpy(f->relname + srelpath - 1, "/", 1);
+    }
+    strncpy(f->relname + srelpath, filename, sfilename);
+    strncpy(f->relname + srelpath + sfilename, "\0", 1);
+    fs->size++;
+    return fs;
+}
+
+void link_markdown()
+{
+    fileentries fs;
+    fs.size = 0;
+    fs.data = (fileentry *)malloc(0 * sizeof(fileentry));
+    size_t ssrcpath = sworkpath + ssrcdir + 2;
+    char srcpath[ssrcpath];
+    snprintf(srcpath, ssrcpath, "%s/%s", workpath, SRCDIR);
+    size_t soutpath = sworkpath + soutdir + 2;
+    char outpath[soutpath];
+    snprintf(outpath, soutpath, "%s/%s", workpath, OUTDIR);
+    traverse_directory(srcpath, NULL, link_markdown_collect_onfile, &fs);
+    traverse_directory(outpath, NULL, link_markdown_link_onfile, &fs);
+    for (int i = 0; i < fs.size; i++)
+        free((fs.data + i)->relname);
+    free(fs.data);
 }
 
 void write_markdown_toc(const char *filename, const char *toc)
@@ -195,7 +307,7 @@ void create_markdown_toc(const char *filename)
             }
             if (!regexec(&regexhash, line, 0, NULL, 0) && code == 0) {
                 size_t sline = strlen(line);
-                for(int i = 0; i < sline; i++) { 
+                for(unsigned long i = 0; i < sline; i++) { 
                     if (line[i] == '#') {
                         toc= (char *)realloc(toc, (pos + 3) * sizeof(char));
                         strncpy(toc + pos, "  ", 2);
@@ -285,6 +397,7 @@ void convert()
     snprintf(outpath, soutpath, "%s/%s", workpath, OUTDIR);
     mkdir(outpath, 0755);
     traverse_directory(srcpath, convert_ondir, convert_onfile, NULL);
+    link_markdown();
 }
 
 void set_default_header(struct mg_connection *connection, contenttype c)
