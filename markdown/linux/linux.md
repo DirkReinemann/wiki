@@ -26,6 +26,7 @@
     * [ssh](#ssh)
       * [ssh port forwarding](#ssh-port-forwarding)
       * [ssh tunnel](#ssh-tunnel)
+      * [mount directory over ssh via sshfs](#mount-directory-over-ssh-via-sshfs)
     * [firefox](#firefox)
       * [bookmark backup file](#bookmark-backup-file)
       * [trust certificate permanently](#trust-certificate-permanently)
@@ -186,6 +187,16 @@ ssh -C2qTnN -D 8080 user@domain
 
 # https
 ssh -C2qTnN -L 8080 user@domain
+```
+
+### mount directory over ssh via sshfs
+
+```bash
+# mount
+sshfs server:port:/path /mnt -o follow_symlinks
+
+# unmount
+fusermount3 -u /mnt
 ```
 
 ## firefox

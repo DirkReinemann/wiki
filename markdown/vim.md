@@ -8,7 +8,7 @@
 
 # vim
 
-# display error messages
+## display error messages
 
 ```vim
 :messages
@@ -24,18 +24,18 @@ cd ~/.vim/bundle/youcompleteme/ycm_build
 cmake -G "Unix Makefiles" -DUSE_SYSTEM_LIBCLANG=ON . ~/.vim/bundle/youcompleteme/third_party/ycmd/cpp
 cmake --build . --target ycm_core --config Release
 
-# go
+### go
 cd ~/.vim/bundle/youcompleteme/third_party/ycmd/third_party/gocode
 go build
 
-# typescript
+### typescript
 sudo npm install -g typescript
 
-# javascript
+### javascript
 cd ~/.vim/bundle/youcompleteme/third_party/ycmd/third_party/tern_runtime
 npm install --production
 
-# rust
+### rust
 cd ~/.vim/bundle/youcompleteme/third_party/ycmd/third_party/racerd
 cargo build --release
 ```

@@ -3,5 +3,10 @@
 # absolute path to the wiki directory
 wikidir="/home/dirk/Projects/Private/wiki"
 
-cd $wikidir || exit 1
-./wiki -s > wiki.log 2>&1
+if [ ! -d $wikidir ]; then
+    echo "The given wiki directory '$wikidir' doesn't exist!"
+    exit 1
+fi
+
+cd $wikidir
+./wiki -s

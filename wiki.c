@@ -667,11 +667,11 @@ void server()
     mg_mgr_init(&mgr, NULL);
     connection = mg_bind(&mgr, PORT, request_handler);
     if (connection == NULL) {
-        printf("Error while starting the wiki on '%s'.\n", PORT);
+        fprintf(stderr, "Error while starting the wiki on '%s'.\n", PORT);
     } else {
         mg_set_protocol_http_websocket(connection);
         opts.document_root = ".";
-        printf("Starting wiki on '%s'.\n", PORT);
+        fprintf(stderr, "Starting wiki on '%s'.\n", PORT);
 
         for (;;)
             mg_mgr_poll(&mgr, 1000);
@@ -701,7 +701,7 @@ int main(int argc, char **argv)
     }
 
     if (getcwd(workpath, 512) == NULL) {
-        printf("Error while reading the current work directory.");
+        fprintf(stderr, "Error while reading the current work directory.");
         exit(1);
     }
 

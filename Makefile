@@ -19,6 +19,7 @@ clean-html:
 	-rm -rf html
 
 install: compile
+	-systemctl stop wiki.service
 	-cp wiki.bin /usr/bin/wiki
 	-cp wiki.service /etc/systemd/system
 	-systemctl enable wiki.service
