@@ -386,6 +386,39 @@ void *convert_onfile(const char *path, const char *filename, void *data)
     return data;
 }
 
+void *delete_directory_onfile(const char *path, const char *filename, void *data)
+{
+    size_t sfilepath = strlen(path) + strlen(filename) + 2;
+    char filepath[sfilepath];
+    snprintf(filepath, sfilepath, "%s/%s", path, filename);
+    remove(filepath);
+    return data;
+}
+
+void *delete_directory_ondir(const char *path, const char *dirname, void *data)
+{
+    fileentries *fs = (fileentries *)data;
+    fs->data = realloc(fs->data, (fs->size + 1) * sizeof(fileentry));
+    size_t sdirpath = strlen(path) + strlen(dirname) + 2;
+    fileentry *f = fs->data + fs->size;
+    f->relname = (char *)malloc(sdirpath * sizeof(char));
+    snprintf(f->relname, sdirpath, "%s/%s", path, dirname);
+    fs->size++;
+    return fs;
+}
+
+void delete_directory(const char* path)
+{
+    fileentries fs;
+    fs.data = (fileentry *)malloc(0 * sizeof(fileentry));
+    fs.size = 0;
+    traverse_directory(path, delete_directory_ondir, delete_directory_onfile, &fs);
+    for (int i = 0; i < fs.size; i++) {
+        fileentry *f = fs.data + i;
+        remove(f->relname);
+    }
+}
+
 void convert()
 {
     size_t ssrcpath = strlen(workpath) + ssrcdir + 2;
@@ -395,6 +428,7 @@ void convert()
 
     snprintf(srcpath, ssrcpath, "%s/%s", workpath, SRCDIR);
     snprintf(outpath, soutpath, "%s/%s", workpath, OUTDIR);
+    delete_directory(outpath);
     mkdir(outpath, 0755);
     traverse_directory(srcpath, convert_ondir, convert_onfile, NULL);
     link_markdown();
