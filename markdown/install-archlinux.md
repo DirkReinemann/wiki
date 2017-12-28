@@ -71,7 +71,10 @@ vi /etc/vconsole.conf (KEYMAP=de-latin1)
 ```bash
 ip link
 systemctl enable dhcpcd@INTERFACE.service
-vi /etc/mkinitcpio.conf (HOOKS="base udev autodetect modconf block keymap encrypt lvm2 filesystems keyboard fsck")
+vi /etc/mkinitcpio.conf
+
+vim> HOOKS="base udev autodetect modconf block keymap encrypt lvm2 filesystems keyboard fsck"
+
 cd /boot
 mkinitcpio -p linux
 passwd
@@ -154,11 +157,11 @@ ssh-keygen -t rsa -b 4096 -C "dirk.reinemann@gmx.de"
 
 ## bash
 
-* copy .inputrc and .bashrc from linux repository
+    * copy .inputrc and .bashrc from linux repository
 
 ## vim
 
-* copy .vimrc from linux repository and install plugins
+    * copy .vimrc from linux repository and install plugins
 
 ```bash
 git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
@@ -204,11 +207,11 @@ yaourt jdk intellij-idea-ultimate-edition spotify blockify sublime-text-dev skyp
 ```
 ## firefox
 
-* adblock plus
-* better privacy
-* firebug
-* https everywhere
-* noscript
-* random agent spoofer
-* self destructing cookies
-* ublock origin
+    * adblock plus
+    * better privacy
+    * firebug
+    * https everywhere
+    * noscript
+    * random agent spoofer
+    * self destructing cookies
+    * ublock origin

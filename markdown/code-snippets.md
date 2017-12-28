@@ -25,6 +25,7 @@
 ```bash
 echo -n "hello" | sha512sum
 ```
+
 ## scala
 
 ### hash string

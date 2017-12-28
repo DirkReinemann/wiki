@@ -59,3 +59,13 @@ vi ~/.vim/bundle/clang_complete/bin/cc_args.py
 
 vim> #!/usr/bin/env python2
 ```
+
+## syntastic
+
+### markdown
+
+[markdownlint]: https://github.com/markdownlint/markdownlint
+
+```bash
+gem install mdl
+```
