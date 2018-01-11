@@ -671,6 +671,36 @@ void handle_convert(struct mg_connection *connection)
     mg_send_http_chunk(connection, "", 0);
 }
 
+void handle_markdown(struct mg_connection *connection, struct http_message *message)
+{
+    char name[512];
+
+    mg_get_http_var(&message->body, "filename", name, 512);
+
+    size_t sfilename = sworkpath + ssrcdir + strlen(name) + 3;
+    char filename[sfilename];
+    snprintf(filename, sfilename, "%s/%s/%s", workpath, SRCDIR, name);
+
+    FILE *file = fopen(filename, "r");
+    if (file != NULL) {
+        char *line = NULL;
+        ssize_t read = 0;
+        size_t len = 0;
+        set_default_header(connection, TEXT);
+        while ((read = getline(&line, &len, file)) != -1) {
+            mg_printf_http_chunk(connection, "%s", line);
+            if (line != NULL) {
+                free(line);
+                line = NULL;
+            }
+        }
+        fclose(file);
+    } else {
+        set_error_header(connection);
+    }
+    mg_send_http_chunk(connection, "", 0);
+}
+
 void request_handler(struct mg_connection *connection, int event, void *data)
 {
     struct http_message *message = (struct http_message *)data;
@@ -685,6 +715,8 @@ void request_handler(struct mg_connection *connection, int event, void *data)
             handle_search(connection, message);
         else if (mg_vcmp(&message->uri, "/convert") == 0)
             handle_convert(connection);
+        else if (mg_vcmp(&message->uri, "/markdown") == 0)
+            handle_markdown(connection, message);
         else
             mg_serve_http(connection, message, opts);
         break;

@@ -1,46 +1,166 @@
 "use strict";
 
-function addErrorMessage(message) {
-    let content = $("#content");
-    let temnplate = `
-        <div class='col-md-6 col-md-offset-3'>
-            <div class='alert alert-danger text-center'>{{message}}</div>
-        </div>
-    `;
-    content.empty();
-    content.append(temnplate.replace("{{message}}", message));
-}
+class Templates {
 
-function getFilterButtonRow() {
-    let template = `
-        <div class="row">
-            <div class="col-md-6">
-                <div class='input-group'>
-                    <span class='input-group-addon'>Filter</span>
-                    <input id='filter' type='text' class='form-control'>
-                    <span class='input-group-btn'>
-                        <button id='clear-filter' class='btn btn-default' type='button'>Clear</button>
-                    </span>
+    static errorPage() {
+        return `
+            <div class="row">
+                <div class='col-md-6 col-md-offset-3'>
+                    <div class='alert alert-danger text-center'>{{message}}</div>
                 </div>
             </div>
-        </div><br/>
-    `;
-    return template;
+        `;
+    }
+
+    static listPage() {
+        return `
+            <h1>FILES</h1>
+            <br/>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class='input-group'>
+                        <span class='input-group-addon'>Filter</span>
+                        <input id='filter' type='text' class='form-control'>
+                        <span class='input-group-btn'>
+                            <button id='clear-filter' class='btn btn-default' type='button'>Clear</button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <br/>
+            <div class="row">
+                <div class="col-md-12">
+                    <ul id='filelist' class='filelist list-group'>
+                        {{#items}}
+                            <li class='list-group-item'>{{.}}</li>
+                        {{/items}}
+                    </ul>
+                </div>
+            </div>
+        `;
+    }
+
+    static showPage() {
+        return `
+            <h1>WIKIPAGE</h1>
+            <br/>
+            <div class='row'>
+                <div class='col-md-6'>
+                    <div class='input-group'>
+                        <span class='input-group-addon'>Filter</span>
+                        <input id='filter' type='text' class='form-control'>
+                        <span class='input-group-btn'>
+                            <button id='clear' class='btn btn-default' type='button'>Clear</button>
+                        </span>
+                    </div>
+                </div>
+                <div class='col-md-6'>
+                    <button id='edit' class='btn btn-default pull-right' type='button'>Edit</button>
+                </div>
+            </div>
+            <br/>
+            <div class='row'>
+                <div class='col-md-12' id='file'>{{data}}</div>
+            </div>
+        `;
+    }
+
+    static editPage() {
+        return `
+
+        `;
+    }
+
+    static searchPage() {
+        return `
+            <h1>SEARCH RESULTS</h1>
+            <br/>
+            <div class='row'>
+                <div class='col-md-12'>
+                    <div class='panel panel-default'>
+                        <div class='panel-heading filename'>
+                            <h3 class='panel-title'>{{filename}}</h3>;
+                        </div>
+                        <div class='panel-body'>
+                            <ul class='list-group'>
+                                {{#items}}
+                                    <li class='list-group-item fileresult'
+                                        data-filename='{{filename}}'
+                                        data-index='{{index}}'
+                                        data-keyword='{{keyword}}'
+                                    >
+                                        <span class='resultbadge'>";
+                                            <span class='badge'>formatNumber(index)</span>
+                                        </span>";
+                                        <span class='resulttext'>{{element}}</span>
+                                    </li>";
+                                {{/items}}
+                            </ul>;
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+}
+
+class Wiki {
+
+    loadPage(page) {
+        let content = $("#content");
+        content.empty();
+        content.append(page);
+    }
+
+    loadFilesPage() {
+        $.ajax({
+            url: "filelist",
+            success: function(data) {
+                let result = getFilterButtonRow();
+                result += getFileListRow(data);
+
+                let content = $("#content");
+                content.empty();
+                content.append("<h1>FILES</h1><br/>");
+                content.append(result);
+
+                $("#filelist li").click(function() {
+                    loadFile($(this).text());
+                });
+
+                $("#filter").keyup(function() {
+                    let value = $(this).val().trim().toLowerCase();
+                    if (value.length > 0) {
+                        $("#filelist li").each(function() {
+                            let li = $(this);
+                            if (li.text().toLowerCase().indexOf(value) !== -1) {
+                                li.show();
+                            }
+                            else {
+                                li.hide();
+                            }
+                        });
+                    } else {
+                        clearFileListFilterInput();
+                    }
+                });
+
+                $("#clear-filter").click(function() {
+                    $("#filter").val("");
+                    clearFileListFilterInput();
+                });
+            },
+            error: function() {
+                addErrorMessage("Error while loading the file list!");
+            }
+        });
+    }
 }
 
 function getFileListRow(filelist) {
-    let template = `
-        <div class="row">
-            <div class="col-md-12">
-                <ul id='filelist' class='filelist list-group'>{{items}}</ul>
-            </div>
-        </div>
-    `;
     let items = "";
     filelist.sort().forEach(function(element) {
-        items += "<li class='list-group-item'>" + element + "</li>";
     });
-    return template.replace("{{items}}", items);
 }
 
 function searchElements(root, keyword, results) {
@@ -66,6 +186,23 @@ function searchElements(root, keyword, results) {
     }
 }
 
+function loadMarkdownFile(filename) {
+    $.ajax({
+        url: "markdown",
+        method: "POST",
+        data: { filename: filename },
+        success: function(data) {
+            let content = $("#content");
+            content.empty();
+            content.append("<h1>WIKIPAGE</h1><br/>");
+            content.append("<div class='row'><div class='col-md-12'><textarea id='content'>" + data + "</textarea></div></div>");
+        },
+        error: function() {
+            addErrorMessage("Error while loading the file '" + filename + "'!");
+        }
+    });
+}
+
 function clearFileFilterInput() {
     $("#file").find("*").each(function() {
         $(this).show();
@@ -81,7 +218,7 @@ function loadFile(filename, keyword = "", index = 0) {
             let content = $("#content");
             content.empty();
             content.append("<h1>WIKIPAGE</h1><br/>");
-            content.append(getFilterButtonRow());
+            content.append(getFilterAndEditButtonRow());
             content.append("<div class='row'><div class='col-md-12' id='file'>" + data + "</div></div>");
 
             if (keyword.length > 0 && index > 0) {
@@ -136,6 +273,10 @@ function loadFile(filename, keyword = "", index = 0) {
                 }
             });
 
+            $("#edit").click(function() {
+                loadMarkdownFile(filename.replace(".html", ".md"));
+            });
+
             $("#clear-filter").click(function() {
                 $("#filter").val("");
                 clearFileFilterInput();
@@ -150,50 +291,6 @@ function loadFile(filename, keyword = "", index = 0) {
 function clearFileListFilterInput() {
     $("#filelist li").each(function() {
         $(this).show();
-    });
-}
-
-function loadFilelist() {
-    $.ajax({
-        url: "filelist",
-        success: function(data) {
-            let result = getFilterButtonRow();
-            result += getFileListRow(data);
-
-            let content = $("#content");
-            content.empty();
-            content.append("<h1>FILES</h1><br/>");
-            content.append(result);
-
-            $("#filelist li").click(function() {
-                loadFile($(this).text());
-            });
-
-            $("#filter").keyup(function() {
-                let value = $(this).val().trim().toLowerCase();
-                if (value.length > 0) {
-                    $("#filelist li").each(function() {
-                        let li = $(this);
-                        if (li.text().toLowerCase().indexOf(value) !== -1) {
-                            li.show();
-                        }
-                        else {
-                            li.hide();
-                        }
-                    });
-                } else {
-                    clearFileListFilterInput();
-                }
-            });
-
-            $("#clear-filter").click(function() {
-                $("#filter").val("");
-                clearFileListFilterInput();
-            });
-        },
-        error: function() {
-            addErrorMessage("Error while loading the file list!");
-        }
     });
 }
 
@@ -216,11 +313,6 @@ function getSearchResultRow(filename, lines, keyword) {
     let items = "";
     lines.forEach(function(element, index) {
         index++;
-        items += "<li class='list-group-item fileresult' data-filename='" + filename;
-        items += "' data-index='" + index;
-        items += "' data-keyword='" + keyword + "'><span class='resultbadge'>";
-        items += "<span class='badge'> " + formatNumber(index) + "</span></span>";
-        items += "<span class='resulttext'>" + element + "</span></li>";
     });
     let result = `
         <div class='row'>
