@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-g -std=c11 -Wall -Werror -D_GNU_SOURCE
+CFLAGS=-g -std=c11 -Werror -D_GNU_SOURCE
 SOURCES=mongoose.c wiki.c
 BIN=wiki
 

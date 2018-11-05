@@ -3,6 +3,8 @@
     * [display error messages](#display-error-messages)
     * [youcompleteme](#youcompleteme)
     * [clang_complete](#clang_complete)
+    * [syntastic](#syntastic)
+      * [markdown](#markdown)
 <!-- toc -->
 
 

@@ -165,7 +165,7 @@ void *link_markdown_link_onfile(const char *path, const char *filename, void *da
                 size_t snewname = srelname + 2;
                 char newname[snewname + 1];
                 strncpy(newname, f->relname, srelname - 2);
-                strncpy(newname + srelname - 2, "html", 4);
+                strncpy(newname + srelname - 2, "html", 5);
                 newname[snewname] = '\0';
                 size_t spattern = strlen(LINK_MARKDOWN_PATTERN) + strlen(f->relname);
                 char pattern[spattern];
@@ -206,10 +206,10 @@ void *link_markdown_collect_onfile(const char *path, const char *filename, void 
         relpath++;
         f->relname = (char *)realloc(f->relname, (sfilename + srelpath) * sizeof(char));
         strncpy(f->relname, relpath, srelpath - 1);
-        strncpy(f->relname + srelpath - 1, "/", 1);
+        strncpy(f->relname + srelpath - 1, "/", 2);
     }
     strncpy(f->relname + srelpath, filename, sfilename);
-    strncpy(f->relname + srelpath + sfilename, "\0", 1);
+    strncpy(f->relname + srelpath + sfilename, "\0", 2);
     fs->size++;
     return fs;
 }
@@ -310,7 +310,7 @@ void create_markdown_toc(const char *filename)
                 for(unsigned long i = 0; i < sline; i++) { 
                     if (line[i] == '#') {
                         toc= (char *)realloc(toc, (pos + 3) * sizeof(char));
-                        strncpy(toc + pos, "  ", 2);
+                        strncpy(toc + pos, "  ", 3);
                         pos += 2;
                     } else {
                         size_t sname = sline - i - 2;
@@ -348,7 +348,7 @@ void *convert_ondir(const char *path, const char *dirname, void *data)
 
     strncpy(outpath, path, spath - ssrcdir);
     strncpy(outpath + spath - ssrcdir, OUTDIR, soutdir);
-    strncpy(outpath + spath - ssrcdir + soutdir, "/", 1);
+    strncpy(outpath + spath - ssrcdir + soutdir, "/", 2);
     strncpy(outpath + spath - ssrcdir + soutdir + 1, dirname, sdirname);
     outpath[soutpath - 1] = '\0';
 
@@ -482,15 +482,15 @@ void *handle_filelist_onfile(const char *path, const char *filename, void *data)
 
     filelist = (char *)realloc(data, size * sizeof(char));
 
-    strncpy(filelist + sfilelist, "\"", 1);
+    strncpy(filelist + sfilelist, "\"", 2);
     if (srelpath > 0) {
         strncpy(filelist + sfilelist + 1, relpath, srelpath);
-        strncpy(filelist + sfilelist + srelpath + 1, "/", 1);
+        strncpy(filelist + sfilelist + srelpath + 1, "/", 2);
         strncpy(filelist + sfilelist + srelpath + 2, filename, sfilename);
-        strncpy(filelist + sfilelist + srelpath + sfilename + 2, "\",", 2);
+        strncpy(filelist + sfilelist + srelpath + sfilename + 2, "\",", 3);
     } else {
         strncpy(filelist + sfilelist + 1, filename, sfilename);
-        strncpy(filelist + sfilelist + sfilename + 1, "\",", 2);
+        strncpy(filelist + sfilelist + sfilename + 1, "\",", 3);
     }
     filelist[size - 1] = '\0';
     return filelist;
@@ -563,7 +563,7 @@ void *handle_search_onfile(const char *path, const char *filename, void *data)
     else
         snprintf(relname, srelname, "%s", filename);
 
-    strncpy(relname + srelname - 5, "html", 4);
+    strncpy(relname + srelname - 5, "html", 5);
     relname[srelname - 1] = '\0';
 
     FILE *file = fopen(filepath, "r");
@@ -591,18 +591,18 @@ void *handle_search_onfile(const char *path, const char *filename, void *data)
                     strncpy(s->filename, relname, srelname);
                     s->filename[srelname] = '\0';
                     s->lines = (char *)malloc((sescaped + 4) * sizeof(char));
-                    strncpy(s->lines, "[\"", 2);
+                    strncpy(s->lines, "[\"", 3);
                     strncpy(s->lines + 2, escaped, sescaped);
-                    strncpy(s->lines + sescaped + 2, "\"", 1);
+                    strncpy(s->lines + sescaped + 2, "\"", 2);
                     s->lines[sescaped + 3] = '\0';
                     alloc = 1;
                 } else {
                     searchresult *s = ss->data + ss->size;
                     size_t slines = strlen(s->lines);
                     s->lines = (char *)realloc(s->lines, (slines + sescaped + 4) * sizeof(char));
-                    strncpy(s->lines + slines, ",\"", 2);
+                    strncpy(s->lines + slines, ",\"", 3);
                     strncpy(s->lines + slines + 2, escaped, sescaped);
-                    strncpy(s->lines + slines + sescaped + 2, "\"", 1);
+                    strncpy(s->lines + slines + sescaped + 2, "\"", 2);
                     s->lines[slines + sescaped + 3] = '\0';
                 }
                 free(highlighted);
